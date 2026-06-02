@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_login_signup_app/data/database/user_table.dart';
 import 'package:flutter_login_signup_app/presentation/auth/bloc/auth_bloc.dart';
+import 'package:flutter_login_signup_app/presentation/auth/signup/view/widget/image_picker_bottom_sheet.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -34,11 +35,8 @@ class _SignupScreenState extends State<SignupScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
-  Future<void> _pickImage() async {
-    final image = await _picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 70,
-    );
+  Future<void> _pickImage(ImageSource source) async {
+    final image = await _picker.pickImage(source: source, imageQuality: 70);
 
     if (image == null) return;
 
@@ -109,7 +107,12 @@ class _SignupScreenState extends State<SignupScreen> {
               child: Column(
                 children: [
                   GestureDetector(
-                    onTap: _pickImage,
+                    onTap: () {
+                      ImagePickerBottomSheet.show(
+                        context: context,
+                        onSelect: _pickImage,
+                      );
+                    },
                     child: CircleAvatar(
                       radius: 55.r,
                       backgroundImage: _image != null

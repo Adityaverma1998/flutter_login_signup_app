@@ -48,14 +48,14 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SafeArea(
         child: BlocConsumer<AuthBloc, AuthState>(
           listener: (context, state) {
-            if (state is AuthSuccess) {
+            if (state is AuthSuccess &&
+                ModalRoute.of(context)?.isCurrent == true) {
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (_) => const HomeScreen()),
                 (_) => false,
               );
             }
-
             if (state is AuthFailure) {
               ScaffoldMessenger.of(
                 context,
