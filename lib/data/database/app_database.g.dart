@@ -96,7 +96,7 @@ class _$AppDatabase extends AppDatabase {
       },
       onCreate: (database, version) async {
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `users` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `email` TEXT NOT NULL, `mobile` TEXT NOT NULL, `password` TEXT NOT NULL, `imagePath` TEXT NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `users` (`mobile` TEXT NOT NULL, `name` TEXT NOT NULL, `email` TEXT NOT NULL, `password` TEXT NOT NULL, `imagePath` TEXT NOT NULL, PRIMARY KEY (`mobile`))');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -119,22 +119,31 @@ class _$UserDao extends UserDao {
             database,
             'users',
             (UserEntity item) => <String, Object?>{
-                  'id': item.id,
+                  'mobile': item.mobile,
                   'name': item.name,
                   'email': item.email,
+                  'password': item.password,
+                  'imagePath': item.imagePath
+                }),
+        _userEntityUpdateAdapter = UpdateAdapter(
+            database,
+            'users',
+            ['mobile'],
+            (UserEntity item) => <String, Object?>{
                   'mobile': item.mobile,
+                  'name': item.name,
+                  'email': item.email,
                   'password': item.password,
                   'imagePath': item.imagePath
                 }),
         _userEntityDeletionAdapter = DeletionAdapter(
             database,
             'users',
-            ['id'],
+            ['mobile'],
             (UserEntity item) => <String, Object?>{
-                  'id': item.id,
+                  'mobile': item.mobile,
                   'name': item.name,
                   'email': item.email,
-                  'mobile': item.mobile,
                   'password': item.password,
                   'imagePath': item.imagePath
                 });
@@ -147,29 +156,41 @@ class _$UserDao extends UserDao {
 
   final InsertionAdapter<UserEntity> _userEntityInsertionAdapter;
 
+  final UpdateAdapter<UserEntity> _userEntityUpdateAdapter;
+
   final DeletionAdapter<UserEntity> _userEntityDeletionAdapter;
 
   @override
   Future<UserEntity?> getUserByEmail(String email) async {
     return _queryAdapter.query('SELECT * FROM users WHERE email = ?1 LIMIT 1',
         mapper: (Map<String, Object?> row) => UserEntity(
-            id: row['id'] as int?,
+            mobile: row['mobile'] as String,
             name: row['name'] as String,
             email: row['email'] as String,
-            mobile: row['mobile'] as String,
             password: row['password'] as String,
             imagePath: row['imagePath'] as String),
         arguments: [email]);
   }
 
   @override
+  Future<UserEntity?> getUserByMobile(String mobile) async {
+    return _queryAdapter.query('SELECT * FROM users WHERE mobile = ?1 LIMIT 1',
+        mapper: (Map<String, Object?> row) => UserEntity(
+            mobile: row['mobile'] as String,
+            name: row['name'] as String,
+            email: row['email'] as String,
+            password: row['password'] as String,
+            imagePath: row['imagePath'] as String),
+        arguments: [mobile]);
+  }
+
+  @override
   Future<UserEntity?> getUserById(int id) async {
     return _queryAdapter.query('SELECT * FROM users WHERE id = ?1 LIMIT 1',
         mapper: (Map<String, Object?> row) => UserEntity(
-            id: row['id'] as int?,
+            mobile: row['mobile'] as String,
             name: row['name'] as String,
             email: row['email'] as String,
-            mobile: row['mobile'] as String,
             password: row['password'] as String,
             imagePath: row['imagePath'] as String),
         arguments: [id]);
@@ -179,17 +200,26 @@ class _$UserDao extends UserDao {
   Future<List<UserEntity>> getAllUsers() async {
     return _queryAdapter.queryList('SELECT * FROM users',
         mapper: (Map<String, Object?> row) => UserEntity(
-            id: row['id'] as int?,
+            mobile: row['mobile'] as String,
             name: row['name'] as String,
             email: row['email'] as String,
-            mobile: row['mobile'] as String,
             password: row['password'] as String,
             imagePath: row['imagePath'] as String));
   }
 
   @override
+  Future<void> deleteAllUsers() async {
+    await _queryAdapter.queryNoReturn('DELETE FROM users');
+  }
+
+  @override
   Future<void> insertUser(UserEntity user) async {
     await _userEntityInsertionAdapter.insert(user, OnConflictStrategy.abort);
+  }
+
+  @override
+  Future<void> updateUser(UserEntity user) async {
+    await _userEntityUpdateAdapter.update(user, OnConflictStrategy.abort);
   }
 
   @override

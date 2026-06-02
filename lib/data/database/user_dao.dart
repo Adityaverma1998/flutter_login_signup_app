@@ -6,8 +6,17 @@ abstract class UserDao {
   @insert
   Future<void> insertUser(UserEntity user);
 
+  @update
+  Future<void> updateUser(UserEntity user);
+
+  @delete
+  Future<void> deleteUser(UserEntity user);
+
   @Query('SELECT * FROM users WHERE email = :email LIMIT 1')
   Future<UserEntity?> getUserByEmail(String email);
+
+  @Query('SELECT * FROM users WHERE mobile = :mobile LIMIT 1')
+  Future<UserEntity?> getUserByMobile(String mobile);
 
   @Query('SELECT * FROM users WHERE id = :id LIMIT 1')
   Future<UserEntity?> getUserById(int id);
@@ -15,6 +24,6 @@ abstract class UserDao {
   @Query('SELECT * FROM users')
   Future<List<UserEntity>> getAllUsers();
 
-  @delete
-  Future<void> deleteUser(UserEntity user);
+  @Query('DELETE FROM users')
+  Future<void> deleteAllUsers();
 }
